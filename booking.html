@@ -370,6 +370,7 @@ form.addEventListener('submit', async (e) => {
         const result = await response.json();
 
         if (result.result === 'success') {
+            paymentModal.style.display = "none";
             Swal.fire({
                 title: 'จองเสร็จสิ้น!',
                 text: 'ข้อมูลและรูปภาพถูกบันทึกเรียบร้อยแล้ว',
@@ -403,6 +404,7 @@ pickupInput.addEventListener('change', function() {
     }
 });
 </script>
+
 
 
 
