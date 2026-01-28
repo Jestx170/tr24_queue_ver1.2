@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking - Minimal B&W</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+   <a href="index.html" class="back-link-float">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    <span>หน้าหลัก</span>
+</a>
+
+<style>
+.back-link-float {
+    position: fixed; /* ใช้ fixed เพื่อให้ติดหน้าจอแม้ไถหน้าลงมา */
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.8); /* พื้นหลังจางๆ ให้เห็นง่ายขึ้น */
+    padding: 8px 12px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    color: #000;
+    font-weight: 500;
+    font-size: 14px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    z-index: 9999;
+}
+.back-link-float:hover {
+    background: #000;
+    color: #fff;
+}
+/* ส่วนของหน้าต่างชำระเงิน (Modal) */
+.modal {
+    display: none; /* ซ่อนไว้ก่อน */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* พื้นหลังดำจางๆ */
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+}
+
+.qr-img {
+    margin: 15px 0;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    max-width: 100%;
+}
+
+.btn-submit {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.btn-submit:disabled {
+    background: #999;
+}
+</style>
+
+    <div class="container">
+        <header>
+            <img width="200" height="150" src="image/TR.png" alt="Shoe Service Logo" class="header-logo">
+            <p style="color:#666; font-size:14px;">จองคิวซักรองเท้า</p>
+        </header>
+
+        <form id="bookingForm">
+            <div class="row1">
+                <!-- <div class="form-group">
+                    <label>ชื่อ (Name)</label>
+                    <input type="text" name="name" required>
+                </div> -->
+                <div class="form-group">
+                    <label>เบอร์โทร (Phone)</label>
+                    <input type="tel" name="phone" required>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="form-group">
+                <label>ประเภทรองเท้า (Shoe Type)</label>
+                <select name="shoe_type" id="shoeType" required onchange="calculateTotal()">
+                <!-- <select name="shoe_type" required> -->
+                    <option value="">-- กรุณาเลือก --</option>
+                    <option value="basketball">ร้องเท้าบาส (basketball shoes)</option>
+                    <option value="sneakers">ร้องเท้าผ้าใบ (Sneakers)</option>
+                    <option value="Suede sneakers">ร้องเท้าผ้าใบหนังกลับ (Suede sneakers)</option>
+                    <option value="Nubuck">ร้องเท้าหนังนูบัค (Nubuck leather shoes)</option>
+                    <option value="boots">ร้องเท้าหนัง (leather)</option>
+                    <option value="sandals">รองเท้าแตะ (Sandals)</option>
+                    <option value="other">อื่นๆ (Other)</option>
+                    
+                </select>
+            </div>
+            
+
+            <div class="row">
+                <div class="form-group">
+                    <label>แบรนด์ (Brand)</label>
+                    <input type="text" name="brand" placeholder="เช่น Nike, Adidas, Unbrand" required>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อรุ่น (Model) <span style="font-weight:300; color:#999;">(ไม่บังคับ)</span></label>
+                    <input type="text" name="model" placeholder="ระบุรุ่น (ถ้าทราบ)">
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>วันรับรองเท้า </label>
+                    <input type="date" name="pickup_date" required>
+                </div>
+                <div class="form-group">
+                    <label>วันคืนรองเท้า *ขั้นต่ำ 3 วัน</label>
+                    <input type="date" name="return_date" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ที่อยู่ / Google Maps (Address)</label>
+                <textarea name="address" rows="3" placeholder="แปะลิงก์ Google Maps หรือที่อยู่จัดส่ง..." required></textarea>
+            </div>
+
+           <!-- <div class="form-group">
+                <label>Member ID</label>
+                <input type="text" name="member_id" placeholder='ถ้าไม่มี ให้พิมพ์ "ไม่มี"'>
+            </div> -->
+
+            <div class="form-group">
+                <label>Note / หมายเหตุเพิ่มเติม</label>
+                <textarea name="note" rows="2" placeholder="เช่น ขอสะอาดๆ, งานด่วน (Extra Charge)"></textarea>
+            </div>
+            
+            <div class="form-group" style="text-align: left; margin-top: 20px;">
+                <label>แนปรูปของที่จะให้ไปรับครับ/คะ</label>
+                <input type="file" id="Product_pictures" accept="image/*" required>
+                <p class="note-text">*ไฟล์จะถูกเก็บไว้ใน Google Drive ของร้าน</p>
+            </div>
+
+            
+        <hr>
+<div class="addon-section">
+    <h3 style="font-size:16px; margin-bottom:15px;">บริการเพิ่มเติม (Add-on Services)</h3>
+    
+    <div class="form-group">
+        <label>ระดับความด่วน (Service Speed)</label>
+        <div class="radio-group">
+            <label class="radio-item">
+                <input type="radio" name="service_speed" value="0" checked onchange="calculateTotal()">
+                ปกติ (Standard) <span class="price">+0.-</span>
+            </label>
+            <label class="radio-item">
+                <input type="radio" name="service_speed" value="100" onchange="calculateTotal()">
+                ด่วน 1-2 วัน (Fast Track) <span class="price">+89.-</span>
+            </label>
+            <label class="radio-item">
+                <input type="radio" name="service_speed" value="159" onchange="calculateTotal()">
+                ด่วนพิเศษ 1 วัน (Super Fast) <span class="price">+129.-</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>บริการพิเศษ (Extra Care)</label>
+        <div class="checkbox-group">
+            <label class="checkbox-item">
+                <input type="checkbox" id="chk_yellow" value="299" onchange="calculateTotal()">
+                แก้พื้นเหลือง (Un-Yellowing) <span class="price">+299.-</span>
+            </label>
+            <label class="checkbox-item">
+                <input type="checkbox" id="chk_ozone" value="129" onchange="calculateTotal()">
+                อบโอโซนฆ่าเชื้อ (Ozone) <span class="price">+159.-</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="total-price-box">
+        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">
+            (ค่าบริการเริ่มต้น 189.-
+             + ค่าบริการรับ-ส่ง 29.-)
+        </div>
+        <span>ราคารวมทั้งสิ้น (Total)</span>
+        <span class="price-text" id="displayTotal">218</span>
+        <span style="font-size:18px;">บาท</span>
+    </div>
+    <button type="button" class="btn-submit" onclick="openPayment()" style="background: #000; color: #fff; width: 100%; padding: 15px; border-radius: 8px; margin-top: 20px; cursor: pointer;">
+        ไปที่หน้าชำระเงิน
+    </button>
+</div>
+
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <h3>ชำระเงิน (Payment)</h3>
+        <p>กรุณาสแกน QR Code เพื่อชำระค่าบริการ</p>
+        
+        <img width="230" src="image/ชำระเงิน.png" alt="PromptPay QR" class="qr-img">
+        
+        <div class="form-group" style="text-align: left; margin-top: 20px;">
+            <label>แนบสลิปโอนเงิน (Upload Slip)</label>
+            <input type="file" id="slipFile" accept="image/*" >
+            <p class="note-text">*ไฟล์จะถูกเก็บไว้ใน Google Drive ของร้าน</p>
+        </div>
+        <button type="submit" id="finalSubmit" class="btn-submit">ยืนยันและส่งข้อมูล</button>
+    </div>
+</div>
+        </form>
+    </div>
+
+ <script>
+    // 🔥 1. Web App URL
+const scriptURL = 'https://script.google.com/macros/s/AKfycbybiznNme-nKJE0MLtvRriebAIwZ9opj0Oo1SYrYE1MDVi3ht5n8ndojkaX8xHKF6Ho/exec';
+
+const form = document.getElementById('bookingForm');
+const btn = document.getElementById('finalSubmit');
+const paymentModal = document.getElementById('paymentModal');
+function calculateTotal() {
+    let basePrice = 189; // ราคาซักเริ่มต้น
+    let deliveryFee = 29; // ค่าส่ง
+    let total = basePrice + deliveryFee; // เริ่มต้นที่ 218.-
+    
+    const shoeType = document.getElementById('shoeType').value;
+    
+    // ปรับราคาตามประเภท
+    if (shoeType === 'Suede sneakers') total += 100;
+    if (shoeType === 'sandals') total -= 110; // ถ้าเป็นรองเท้าแตะ (189 + 29) - 110 = 108.- ถูกต้องไหมครับ?
+
+    // บวกค่าความด่วนจาก Radio
+    const speedRadios = document.getElementsByName('service_speed');
+    for (const radio of speedRadios) {
+        if (radio.checked) {
+            total += parseInt(radio.value);
+            break; 
+        }
+    }
+
+    // บวกบริการพิเศษจาก Checkbox
+    const chkYellow = document.getElementById('chk_yellow');
+    const chkOzone = document.getElementById('chk_ozone');
+    
+    if (chkYellow && chkYellow.checked) total += 299;
+    if (chkOzone && chkOzone.checked) total += 159; // ปรับให้ตรงกับป้ายราคา 159.-
+
+    // แสดงผลในหน้าเว็บ
+    const displayTotal = document.getElementById('displayTotal');
+    if(displayTotal) {
+        displayTotal.innerText = total.toLocaleString();
+    }
+    
+    return total;
+}
+
+// เรียกใช้ครั้งแรกเพื่อให้ราคาแสดงผลรวมค่าส่งทันทีที่โหลดหน้า
+calculateTotal();
+
+function openPayment() {
+    console.log("กำลังตรวจสอบฟอร์ม..."); // เช็คว่ากดปุ่มติดไหม
+    if (form.checkValidity()) {
+        console.log("ฟอร์มถูกต้อง เปิด Modal");
+        paymentModal.style.display = 'flex'; // เปลี่ยนจาก none เป็น flex
+        calculateTotal(); 
+    } else {
+        console.log("ฟอร์มไม่ครบ");
+        Swal.fire({
+            icon: 'warning',
+            title: 'ข้อมูลไม่ครบ',
+            text: 'กรุณากรอกข้อมูลและแนบรูปภาพรองเท้าให้ครบถ้วนก่อนไปหน้าชำระเงิน',
+            confirmButtonColor: '#000'
+        });
+        form.reportValidity();
+    }
+}
+
+// ปิด Modal เมื่อคลิกข้างนอก (Optional)
+window.onclick = function(event) {
+    if (event.target == paymentModal) {
+        paymentModal.style.display = "none";
+    }
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    btn.innerHTML = "กำลังอัปโหลดรูปภาพและบันทึก...";
+    btn.disabled = true;
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve({
+            base64: reader.result.split(',')[1],
+            name: file.name,
+            type: file.type
+        });
+        reader.onerror = error => reject(error);
+    });
+
+    try {
+        const productInput = document.getElementById('Product_pictures');
+        const slipInput = document.getElementById('slipFile');
+
+        if (!productInput.files[0] || !slipInput.files[0]) {
+            Swal.fire('แจ้งเตือน', 'กรุณาแนบทั้งรูปสินค้าและสลิปโอนเงิน', 'warning');
+            btn.innerHTML = "ยืนยันและส่งข้อมูล";
+            btn.disabled = false;
+            return;
+        }
+
+        const productFileData = await toBase64(productInput.files[0]);
+        const slipFileData = await toBase64(slipInput.files[0]);
+
+        const payload = {
+            phone: form.phone.value,
+            shoe_type: form.shoe_type.value,
+            brand: form.brand.value,
+            model: form.model.value,
+            pickup_date: form.pickup_date.value,
+            return_date: form.return_date.value,
+            address: form.address.value,
+            note: form.note.value,
+            total_price: calculateTotal(),
+            productFile: productFileData.base64,
+            productFileName: productFileData.name,
+            productMimeType: productFileData.type,
+            slipFile: slipFileData.base64,
+            slipFileName: slipFileData.name,
+            slipMimeType: slipFileData.type
+        };
+
+        const response = await fetch(scriptURL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload) 
+        });
+
+        const result = await response.json();
+
+        if (result.result === 'success') {
+            Swal.fire({
+                title: 'จองเสร็จสิ้น!',
+                text: 'ข้อมูลและรูปภาพถูกบันทึกเรียบร้อยแล้ว',
+                icon: 'success',
+                confirmButtonColor: '#000'
+            }).then(() => {
+                window.location.href = "index.html";
+            });
+        } else {
+            throw new Error(result.error);
+        }
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
+    } finally {
+        btn.innerHTML = "ยืนยันและส่งข้อมูล";
+        btn.disabled = false;
+    }
+});
+// ใส่ไว้ในส่วนท้ายของ <script>
+    const pickupInput = document.getElementsByName('pickup_date')[0];
+const returnInput = document.getElementsByName('return_date')[0];
+
+pickupInput.addEventListener('change', function() {
+    if (this.value) {
+        let date = new Date(this.value);
+        date.setDate(date.getDate() + 3); // บวกเพิ่ม 3 วัน
+        returnInput.min = date.toISOString().split("T")[0];
+        returnInput.value = date.toISOString().split("T")[0];
+    }
+});
+</script>
+
+
+
+
+
+
+
