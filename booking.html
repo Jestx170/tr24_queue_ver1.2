@@ -16,10 +16,10 @@
 
 <style>
 .back-link-float {
-    position: fixed; /* ใช้ fixed เพื่อให้ติดหน้าจอแม้ไถหน้าลงมา */
+    position: fixed;
     top: 20px;
     left: 20px;
-    background: rgba(255, 255, 255, 0.8); /* พื้นหลังจางๆ ให้เห็นง่ายขึ้น */
+    background: rgba(255, 255, 255, 0.8);
     padding: 8px 12px;
     border-radius: 50px;
     display: flex;
@@ -39,13 +39,13 @@
 }
 /* ส่วนของหน้าต่างชำระเงิน (Modal) */
 .modal {
-    display: none; /* ซ่อนไว้ก่อน */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* พื้นหลังดำจางๆ */
+    background-color: rgba(0, 0, 0, 0.7);
     z-index: 10000;
     justify-content: center;
     align-items: center;
@@ -89,6 +89,37 @@
 .btn-submit:disabled {
     background: #999;
 }
+
+/* --- เพิ่ม CSS ส่วน Loading Overlay ที่ขาดไป --- */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 99999;
+    display: flex; /* Flex จะถูกคุมด้วย JS อีกที */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.spinner-box {
+    text-align: center;
+}
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 
     <div class="container">
@@ -99,10 +130,6 @@
 
         <form id="bookingForm">
             <div class="row1">
-                <!-- <div class="form-group">
-                    <label>ชื่อ (Name)</label>
-                    <input type="text" name="name" required>
-                </div> -->
                 <div class="form-group">
                     <label>เบอร์โทร (Phone)</label>
                     <input type="tel" name="phone" required>
@@ -114,7 +141,6 @@
             <div class="form-group">
                 <label>ประเภทรองเท้า (Shoe Type)</label>
                 <select name="shoe_type" id="shoeType" required onchange="calculateTotal()">
-                <!-- <select name="shoe_type" required> -->
                     <option value="">-- กรุณาเลือก --</option>
                     <option value="basketball">ร้องเท้าบาส (basketball shoes)</option>
                     <option value="sneakers">ร้องเท้าผ้าใบ (Sneakers)</option>
@@ -123,7 +149,6 @@
                     <option value="boots">ร้องเท้าหนัง (leather)</option>
                     <option value="sandals">รองเท้าแตะ (Sandals)</option>
                     <option value="other">อื่นๆ (Other)</option>
-                    
                 </select>
             </div>
             
@@ -156,11 +181,6 @@
                 <label>ที่อยู่ / Google Maps (Address)</label>
                 <textarea name="address" rows="3" placeholder="แปะลิงก์ Google Maps หรือที่อยู่จัดส่ง..." required></textarea>
             </div>
-
-           <!-- <div class="form-group">
-                <label>Member ID</label>
-                <input type="text" name="member_id" placeholder='ถ้าไม่มี ให้พิมพ์ "ไม่มี"'>
-            </div> -->
 
             <div class="form-group">
                 <label>Note / หมายเหตุเพิ่มเติม</label>
@@ -241,6 +261,7 @@
 </div>
         </form>
     </div>
+
 <div id="loadingOverlay" class="loading-overlay" style="display: none;">
     <div class="spinner-box">
         <div class="spinner"></div>
@@ -248,6 +269,7 @@
         <p style="font-size: 12px; color: #aaa;">กรุณารอสักครู่ อย่าปิดหน้าต่าง</p>
     </div>
 </div>
+
  <script>
     // 🔥 1. Web App URL
 const scriptURL = 'https://script.google.com/macros/s/AKfycbybiznNme-nKJE0MLtvRriebAIwZ9opj0Oo1SYrYE1MDVi3ht5n8ndojkaX8xHKF6Ho/exec';
@@ -255,6 +277,8 @@ const scriptURL = 'https://script.google.com/macros/s/AKfycbybiznNme-nKJE0MLtvRr
 const form = document.getElementById('bookingForm');
 const btn = document.getElementById('finalSubmit');
 const paymentModal = document.getElementById('paymentModal');
+const loadingOverlay = document.getElementById('loadingOverlay'); // ✅ เพิ่ม: ประกาศตัวแปร Loading
+
 function calculateTotal() {
     let basePrice = 189; // ราคาซักเริ่มต้น
     let deliveryFee = 29; // ค่าส่ง
@@ -264,7 +288,8 @@ function calculateTotal() {
     
     // ปรับราคาตามประเภท
     if (shoeType === 'Suede sneakers') total += 100;
-    if (shoeType === 'sandals') total -= 110; // ถ้าเป็นรองเท้าแตะ (189 + 29) - 110 = 108.- ถูกต้องไหมครับ?
+    if (shoeType === 'sandals') total -= 110; 
+    // หมายเหตุ: (189 + 29) - 110 = 108.- ถูกต้องครับ
 
     // บวกค่าความด่วนจาก Radio
     const speedRadios = document.getElementsByName('service_speed');
@@ -280,7 +305,7 @@ function calculateTotal() {
     const chkOzone = document.getElementById('chk_ozone');
     
     if (chkYellow && chkYellow.checked) total += 299;
-    if (chkOzone && chkOzone.checked) total += 159; // ปรับให้ตรงกับป้ายราคา 159.-
+    if (chkOzone && chkOzone.checked) total += 159; 
 
     // แสดงผลในหน้าเว็บ
     const displayTotal = document.getElementById('displayTotal');
@@ -295,10 +320,10 @@ function calculateTotal() {
 calculateTotal();
 
 function openPayment() {
-    console.log("กำลังตรวจสอบฟอร์ม..."); // เช็คว่ากดปุ่มติดไหม
+    console.log("กำลังตรวจสอบฟอร์ม..."); 
     if (form.checkValidity()) {
         console.log("ฟอร์มถูกต้อง เปิด Modal");
-        paymentModal.style.display = 'flex'; // เปลี่ยนจาก none เป็น flex
+        paymentModal.style.display = 'flex'; 
         calculateTotal(); 
     } else {
         console.log("ฟอร์มไม่ครบ");
@@ -312,7 +337,7 @@ function openPayment() {
     }
 }
 
-// ปิด Modal เมื่อคลิกข้างนอก (Optional)
+// ปิด Modal เมื่อคลิกข้างนอก
 window.onclick = function(event) {
     if (event.target == paymentModal) {
         paymentModal.style.display = "none";
@@ -324,7 +349,7 @@ form.addEventListener('submit', async (e) => {
     
     btn.innerHTML = "กำลังอัปโหลดรูปภาพและบันทึก...";
     btn.disabled = true;
-    loadingOverlay.style.display = 'flex'; // สั่งโชว์ Loading Overlay ที่สร้างไว้
+    loadingOverlay.style.display = 'flex'; // ✅ สั่งแสดง Loading
 
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -345,11 +370,27 @@ form.addEventListener('submit', async (e) => {
             Swal.fire('แจ้งเตือน', 'กรุณาแนบทั้งรูปสินค้าและสลิปโอนเงิน', 'warning');
             btn.innerHTML = "ยืนยันและส่งข้อมูล";
             btn.disabled = false;
+            loadingOverlay.style.display = 'none'; // ✅ ปิด loading ถ้าไฟล์ไม่ครบ
             return;
         }
 
         const productFileData = await toBase64(productInput.files[0]);
         const slipFileData = await toBase64(slipInput.files[0]);
+
+        // ✅ เพิ่ม: ดึงชื่อบริการด่วน (Text) เพื่อส่งไปเก็บใน Sheet
+        const speedRadio = document.querySelector('input[name="service_speed"]:checked');
+        let serviceSpeedText = "ปกติ (Standard)";
+        if (speedRadio) {
+            serviceSpeedText = speedRadio.parentElement.innerText.replace(/\s+/g, ' ').trim();
+        }
+
+        // ✅ เพิ่ม: ดึงชื่อบริการเสริม (Text) เพื่อส่งไปเก็บใน Sheet
+        let addons = [];
+        const chkYellow = document.getElementById('chk_yellow');
+        const chkOzone = document.getElementById('chk_ozone');
+        if (chkYellow && chkYellow.checked) addons.push("แก้พื้นเหลือง (Un-Yellowing)");
+        if (chkOzone && chkOzone.checked) addons.push("อบโอโซนฆ่าเชื้อ (Ozone)");
+        const addonsText = addons.length > 0 ? addons.join(", ") : "-";
 
         const payload = {
             phone: form.phone.value,
@@ -360,6 +401,8 @@ form.addEventListener('submit', async (e) => {
             return_date: form.return_date.value,
             address: form.address.value,
             note: form.note.value,
+            service_speed: serviceSpeedText, // ส่งข้อมูลความด่วนไป Sheet
+            addon_services: addonsText,      // ส่งข้อมูลบริการเสริมไป Sheet
             total_price: calculateTotal(),
             productFile: productFileData.base64,
             productFileName: productFileData.name,
@@ -375,6 +418,9 @@ form.addEventListener('submit', async (e) => {
         });
 
         const result = await response.json();
+
+        // ✅ ปิด Loading ทันทีเมื่อได้ผลลัพธ์
+        loadingOverlay.style.display = 'none'; 
 
         if (result.result === 'success') {
             paymentModal.style.display = "none";
@@ -392,15 +438,16 @@ form.addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error(error);
+        loadingOverlay.style.display = 'none'; // ✅ ปิด Loading เมื่อ Error
         Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
     } finally {
-        // คืนค่าปุ่มให้กดได้อีกครั้ง (เผื่อกรณี Error แล้วอยากกดส่งใหม่)
         btn.innerHTML = "ยืนยันและส่งข้อมูล";
         btn.disabled = false;
     }
 });
-// ใส่ไว้ในส่วนท้ายของ <script>
-    const pickupInput = document.getElementsByName('pickup_date')[0];
+
+// ส่วนจัดการวันที่
+const pickupInput = document.getElementsByName('pickup_date')[0];
 const returnInput = document.getElementsByName('return_date')[0];
 
 pickupInput.addEventListener('change', function() {
@@ -412,12 +459,5 @@ pickupInput.addEventListener('change', function() {
     }
 });
 </script>
-
-
-
-
-
-
-
-
-
+</body>
+</html>
