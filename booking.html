@@ -186,11 +186,11 @@
                 ปกติ (Standard) <span class="price">+0.-</span>
             </label>
             <label class="radio-item">
-                <input type="radio" name="service_speed" value="100" onchange="calculateTotal()">
+                <input type="radio" name="service_speed" value="89" onchange="calculateTotal()">
                 ด่วน 1-2 วัน (Fast Track) <span class="price">+89.-</span>
             </label>
             <label class="radio-item">
-                <input type="radio" name="service_speed" value="159" onchange="calculateTotal()">
+                <input type="radio" name="service_speed" value="129" onchange="calculateTotal()">
                 ด่วนพิเศษ 1 วัน (Super Fast) <span class="price">+129.-</span>
             </label>
         </div>
@@ -204,7 +204,7 @@
                 แก้พื้นเหลือง (Un-Yellowing) <span class="price">+299.-</span>
             </label>
             <label class="checkbox-item">
-                <input type="checkbox" id="chk_ozone" value="129" onchange="calculateTotal()">
+                <input type="checkbox" id="chk_ozone" value="159" onchange="calculateTotal()">
                 อบโอโซนฆ่าเชื้อ (Ozone) <span class="price">+159.-</span>
             </label>
         </div>
@@ -241,7 +241,13 @@
 </div>
         </form>
     </div>
-
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="spinner-box">
+        <div class="spinner"></div>
+        <p>กำลังดำเนินการ...</p>
+        <p style="font-size: 12px; color: #aaa;">กรุณารอสักครู่ อย่าปิดหน้าต่าง</p>
+    </div>
+</div>
  <script>
     // 🔥 1. Web App URL
 const scriptURL = 'https://script.google.com/macros/s/AKfycbybiznNme-nKJE0MLtvRriebAIwZ9opj0Oo1SYrYE1MDVi3ht5n8ndojkaX8xHKF6Ho/exec';
@@ -318,6 +324,7 @@ form.addEventListener('submit', async (e) => {
     
     btn.innerHTML = "กำลังอัปโหลดรูปภาพและบันทึก...";
     btn.disabled = true;
+    loadingOverlay.style.display = 'flex'; // สั่งโชว์ Loading Overlay ที่สร้างไว้
 
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -387,6 +394,7 @@ form.addEventListener('submit', async (e) => {
         console.error(error);
         Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
     } finally {
+        // คืนค่าปุ่มให้กดได้อีกครั้ง (เผื่อกรณี Error แล้วอยากกดส่งใหม่)
         btn.innerHTML = "ยืนยันและส่งข้อมูล";
         btn.disabled = false;
     }
@@ -404,6 +412,7 @@ pickupInput.addEventListener('change', function() {
     }
 });
 </script>
+
 
 
 
